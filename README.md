@@ -21,4 +21,5 @@ a n8n workflow for a n8n chatbot that emails the end users new chat transcripts 
 14. activate workflow
 
 ## Notes
-this workflow was created on a locally hosted version of n8n which was installed via Node.js    
+this workflow was created on a locally hosted version of n8n which was installed via Node.js  
+email ryan@ryancarden.com if you find any bugs or have suggestions
