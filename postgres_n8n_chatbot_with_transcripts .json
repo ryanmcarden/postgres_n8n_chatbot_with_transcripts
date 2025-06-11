@@ -277,7 +277,7 @@
     },
     {
       "parameters": {
-        "content": "## 👨‍🎤 Email Sub-Workflow Setup\n9. connect your Postgres Db credential that you setup in setup 2 with the below Postgres nodes.\n10. if you didn't change any of the Db column names, you shouldn't have to modify any of the postgres queries or other code that I wrote\n11. setup a Gmail credential and add it to the Gmail node. You can use any email provider of your choice. \n12. the two variables available for your email message node will be: {{ $json.data[3].session_id }} and {{ $json.emailBody }} \n13. you can change how often this tool runs via line 4 of the query located in the \"Lookup Last 30 Minutes Chat Session Ids\" node",
+        "content": "## 👨‍🎤 Email Sub-Workflow Setup\n9. connect your Postgres Db credential that you setup in setup 2 with the below Postgres nodes.\n10. if you didn't change any of the Db column names, you shouldn't have to modify any of the postgres queries or other code that I wrote\n11. setup a Gmail credential and add it to the Gmail node. You can use any email provider of your choice. \n12. the two variables available for your email message node will be: {{ $json.data.session_id }} and {{ $json.emailBody }} \n13. you can change how often this tool runs via line 4 of the query located in the \"Lookup Last 30 Minutes Chat Session Ids\" node\n14. activate workflow",
         "height": 566,
         "width": 2309,
         "color": 4
