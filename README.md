@@ -19,3 +19,6 @@ a n8n workflow for a n8n chatbot that emails the end users new chat transcripts 
 12. the two variables available for your email message node will be: {{ $json.data.session_id }} and {{ $json.emailBody }} 
 13. you can change how often this tool runs via line 4 of the query located in the "Lookup Last 60 Minutes Chat Session Ids" node
 14. activate workflow
+
+## Notes
+this workflow was created on a locally hosted version of n8n which was installed via Node.js    
