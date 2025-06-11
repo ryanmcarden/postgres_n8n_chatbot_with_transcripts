@@ -1,0 +1,488 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "gpt-4o"
+        },
+        "options": {
+          "topP": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2060,
+        -1680
+      ],
+      "id": "e981cf42-6182-437a-9a08-0b2c6d86260f",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "8NovgF817NWnR4No",
+          "name": "Test"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.3,
+      "position": [
+        2240,
+        -1680
+      ],
+      "id": "677524dc-d97b-4144-af8d-96ff8282c045",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "qBZsy3qgGu1cnRiB",
+          "name": "Test Account"
+        }
+      },
+      "notes": "send timestamp when adding rows"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1900,
+        -1900
+      ],
+      "id": "ed38546e-546a-4aae-9891-45a9b385f22c",
+      "name": "When chat message received",
+      "webhookId": "c2ea3203-8cbc-4347-a662-a00aca7931f6"
+    },
+    {
+      "parameters": {
+        "content": "## 👨‍🎤 Chatbot Setup\n1. setup Postgres Db\n2. setup n8n credential for the Postgres Db you setup in step 1\n3. setup basic n8n Chatbot workflow as illustrated below\n4. connect Postgres Memory node to AI Agent and connect it to your db with the credential setup in step 2\n5. click the open chat button in your n8n workflow and do a test chat with the AI agent. If your node is connected correctly to your Db, the test chat will create a table called \"n8n_chat_histories\"\n6. Open your database in pgAdmin (or something similar) and add a column named \"date_time\". \n6.5 make sure and give your new \"date_time\" column the datatype of \"timestamp without timezone\" and set the default constraint to \"CURRENT_TIMESTAMP\". This gives your chat history timestamps.\n7. See the sub-workflow below that sends the email transcripts.\n8. Activate workflow",
+        "height": 826,
+        "width": 849,
+        "color": 5
+      },
+      "id": "bf928e45-67dc-479a-abd6-54e29b098845",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1780,
+        -2280
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2240,
+        -1160
+      ],
+      "id": "9206d52d-ab45-4fe1-bded-d9f1a0fad1b1",
+      "name": "Aggregate",
+      "executeOnce": false
+    },
+    {
+      "parameters": {
+        "jsCode": "const conversation = items[0].json.data;\nlet html = `<h2>Chat Transscript</h2><table border=\"1\" cellpadding=\"6\" cellspacing=\"0\" style=\"border-collapse:collapse; font-family:Arial; font-size:14px; width:100%;\">`;\nhtml += `<tr><th style=\"background:#f0f0f0;\">Speaker</th><th style=\"background:#f0f0f0;\">Message</th></tr>`;\n\nfor (const entry of conversation) {\n  const speaker = entry.message.type === \"human\" ? \"customer\" : \"ai\";\n  const content = entry.message.content.replace(/\\n/g, \"<br>\");\n  html += `<tr><td><strong>${speaker}</strong></td><td>${content}</td></tr>`;\n}\n\nhtml += `</table>`;\nreturn [{ json: { emailBody: html } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2460,
+        -1080
+      ],
+      "id": "31a0639e-72a6-4d41-b2f6-bde630ecf73b",
+      "name": "Code",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1800,
+        -1080
+      ],
+      "id": "0835014f-85e4-4af7-96ef-cb2ae0f96e8d",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3120,
+        -1080
+      ],
+      "id": "48db7e11-ca77-4b01-a292-7bd5464dbd92",
+      "name": "Wait 3 Seconds",
+      "webhookId": "2133948d-7674-4e66-974d-419ca4c9a237"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "session_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        -1080
+      ],
+      "id": "c6de5983-1c99-4ee9-aa95-9780d9062bd3",
+      "name": "Split Out session_ids"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        2680,
+        -1160
+      ],
+      "id": "f84b7a15-5019-42cc-b723-5e3aee9c1258",
+      "name": "Merge session_id and HTML Email Body"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 30
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        1140,
+        -1080
+      ],
+      "id": "ccdc9b40-3c81-48dd-9cc6-cca993202120",
+      "name": "Execute Every 30 Minutes"
+    },
+    {
+      "parameters": {
+        "authentication": "serviceAccount",
+        "sendTo": "test@test.com",
+        "subject": "=Chat Transcript | Session: {{ $json.data[3].session_id }}",
+        "message": "={{ $json.emailBody }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2900,
+        -1160
+      ],
+      "id": "d844b090-7aca-40cb-bb76-bed23038cb39",
+      "name": "Send Email",
+      "webhookId": "26eac1b0-260a-41ec-952d-8b315e0ee2b8",
+      "executeOnce": false,
+      "credentials": {
+        "googleApi": {
+          "id": "frw8P6ToovTNinfl",
+          "name": "Gmail Test account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT *, message\nFROM n8n_chat_histories\nWHERE session_id = '{{ $json.session_id }}';",
+        "options": {}
+      },
+      "id": "e0deb17d-9c26-474c-82a1-907a1d27241e",
+      "name": "Fetch Single Chat Transcript",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [
+        2020,
+        -1160
+      ],
+      "executeOnce": true,
+      "credentials": {
+        "postgres": {
+          "id": "qBZsy3qgGu1cnRiB",
+          "name": "Test Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "## ChatBot Instructions"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        2140,
+        -1900
+      ],
+      "id": "a11d21fd-7897-4a64-99a3-0bbdef68c37f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Table', ``, 'string') }}",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        2360,
+        -1680
+      ],
+      "id": "222b59d9-dca1-4b03-9067-4e57a537abd7",
+      "name": "Search For Data",
+      "credentials": {
+        "postgres": {
+          "id": "qBZsy3qgGu1cnRiB",
+          "name": "Test Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 👨‍🎤 Email Sub-Workflow Setup\n9. connect your Postgres Db credential that you setup in setup 2 with the below Postgres nodes.\n10. if you didn't change any of the Db column names, you shouldn't have to modify any of the postgres queries or other code that I wrote\n11. setup a Gmail credential and add it to the Gmail node. You can use any email provider of your choice. \n12. the two variables available for your email message node will be: {{ $json.data[3].session_id }} and {{ $json.emailBody }} \n13. you can change how often this tool runs via line 4 of the query located in the \"Lookup Last 30 Minutes Chat Session Ids\" node",
+        "height": 566,
+        "width": 2309,
+        "color": 4
+      },
+      "id": "bfa69e0f-6a74-4aa7-a559-748e2c80ff05",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1040,
+        -1320
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT DISTINCT on (session_id)\n  *\nFrom n8n_chat_histories\nWHERE date_time >= NOW() - INTERVAL '60 minutes';",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1360,
+        -1080
+      ],
+      "id": "b0ca3282-59cf-4be0-99a9-9831cc3bce53",
+      "name": "Lookup Last 60 Minute's Chat session_ids",
+      "credentials": {
+        "postgres": {
+          "id": "qBZsy3qgGu1cnRiB",
+          "name": "Test Account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge session_id and HTML Email Body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Merge session_id and HTML Email Body",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Fetch Single Chat Transcript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out session_ids": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge session_id and HTML Email Body": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Every 30 Minutes": {
+      "main": [
+        [
+          {
+            "node": "Lookup Last 60 Minute's Chat session_ids",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        [
+          {
+            "node": "Wait 3 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Single Chat Transcript": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Search For Data": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Last 60 Minute's Chat session_ids": {
+      "main": [
+        [
+          {
+            "node": "Split Out session_ids",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "70c0962278951976494f8d5c4af767799b90265d5f4700aea432af266c0cb62e"
+  }
+}
